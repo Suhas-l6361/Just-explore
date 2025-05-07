@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register - Just Explore</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+    body {
+      background: url('registerimage.png') no-repeat center center;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Video background (initially hidden) */
+    #bgVideo {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      display: none;
+    }
+
+    .form-wrapper {
+      position: absolute;
+      top: 74%;
+      left: 71%;
+      transform: translate(-50%, -50%);
+      width: 350px;
+      padding: 10px;
+      height: 350px;
+      background: transparent;
+      backdrop-filter: blur(4px);
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 1s ease, opacity 1s ease;
+      z-index: 1;
+    }
+    /* Fly-out animation */
+    .form-wrapper.fly-out {
+      transform: translate(-150%, -50%) scale(0.5);
+      opacity: 0;
+    }
+
+    .form-wrapper h2 {
+      color: white;
+      font-size: 20px;
+      text-align: center;
+      margin-bottom: 15px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .form-wrapper input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .form-wrapper button {
+      width: 100%;
+      padding: 10px;
+      background-color: #2E7D32;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      margin-top: 8px;
+    }
+    .form-wrapper button:hover {
+      background-color: #1B5E20;
+      transform: scale(1.03);
+    }
+
+    /* Back link styling */
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      color: #fff;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .back-link:hover {
+      opacity: 0.8;
+    }
+
+    /* Popup message */
+    .popup-msg {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      padding: 15px 25px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 2;
+    }
+    .popup-msg.show {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .form-wrapper {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background video (hidden initially) -->
+  <video id="bgVideo" autoplay muted loop>
+    <source src="registervideo.mp4" type="video/mp4">
+  </video>
+
+  <div class="form-wrapper" id="formWrapper">
+    <h2>REGISTER</h2>
+    <form id="registerForm">
+      <input id="name" type="text" placeholder="Enter name" required />
+      <input id="email" type="email" placeholder="Enter email" required />
+      <input id="password" type="password" placeholder="Enter password" required />
+      <button type="submit">SUBMIT</button>
+    </form>
+    <span class="back-link" id="backToLogin">← Back to Login</span>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDfCw-ftxh3nvBbzEmjedz4exlAUPXh920",
+      authDomain: "try-two-4e55c.firebaseapp.com",
+      projectId: "try-two-4e55c",
+      storageBucket: "try-two-4e55c.appspot.com",
+      messagingSenderId: "133779617189",
+      appId: "1:133779617189:web:492e0b26adf205c79de44c"
+    };
+
+    // Initialize Firebase
+    initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    const formWrapper = document.getElementById('formWrapper');
+    const form = document.getElementById('registerForm');
+    const backLink = document.getElementById('backToLogin');
+    const bgVideo = document.getElementById('bgVideo');
+
+    // Back to login handler
+    backLink.addEventListener('click', () => {
+      window.location.href = 'http://127.0.0.1:5500/just_expore/login.html';
+    });
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const name     = document.getElementById('name').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        if (name) await updateProfile(user, { displayName: name });
+
+        // Create popup
+        const popup = document.createElement('div');
+        popup.className = 'popup-msg';
+        popup.textContent = 'Registration successful!';
+        document.body.appendChild(popup);
+
+        // Show popup for 2s
+        requestAnimationFrame(() => popup.classList.add('show'));
+        setTimeout(() => {
+          popup.classList.remove('show');
+          // Fly the form out over 1s
+          formWrapper.classList.add('fly-out');
+        }, 2000);
+
+        // After total 3s, show video
+        setTimeout(() => {
+          formWrapper.remove();
+          document.body.style.background = 'none';
+          popup.remove();
+          bgVideo.style.display = 'block';
+          bgVideo.play();
+        }, 3000);
+
+        // After 4 seconds of video play, redirect to login
+        setTimeout(() => {
+          window.location.href = 'http://127.0.0.1:5500/just_expore/login.html';
+        }, 3000 + 4000);
+
+      } catch (err) {
+        let msg = err.message;
+        if (err.code === "auth/email-already-in-use") {
+          msg = "That email is already registered.";
+        } else if (err.code === "auth/weak-password") {
+          msg = "Password should be at least 6 characters.";
+        }
+        alert(msg);
+      }
+    });
+  </script>
+
+</body>
+</html>

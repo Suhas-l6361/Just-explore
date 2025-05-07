@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Train Journey Scroll Map – Final</title>
+  <style>
+    /* ——— your existing on-screen styling unchanged ——— */
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{height:100%;overflow-y:auto;overflow-x:auto}
+    body{min-width:2000px;font-family:Arial,sans-serif;position:relative;}
+    .video-bg{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1}
+    audio{display:none}
+    .info{position:absolute;background:rgba(255,255,255,.95);padding:12px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.3);opacity:0;transform:translateY(20px);transition:.8s;width:300px;z-index:3}
+    .info.show{opacity:1;transform:translateY(0)}
+    .start{top:50px;left:20px;background:#0f2040;color:#fff}
+    .dest{top:180px;left:600px}
+    .hotel{top:300px;left:900px}
+    .p2{top:350px;left:1300px}
+    .p3{top:350px;left:1700px}
+    .day2{top:650px;left:1700px;font-size:18px;color:#1a3e3e}
+    .p4{top:1050px;left:1700px}
+    .p5{top:1050px;left:1300px}
+    .p6{top:1550px;left:1300px}
+    .end{top:1550px;left:800px;font-size:20px;text-align:center}
+    img{width:60px;height:60px;border-radius:4px;object-fit:cover}
+    .details h4{margin-bottom:4px;font-size:16px}
+    .details p{font-size:13px;margin:2px 0}
+    .line{position:absolute;background:#3498db;opacity:0;z-index:2}
+    .line.show{opacity:1}
+    .hl{height:4px;width:0}
+    .vl{width:4px;height:0}
+    .hl1{top:110px;left:200px}
+    .vl1{top:110px;left:520px}
+    .vl2{top:200px;left:520px}
+    .hl2{top:320px;left:520px}
+    .vl3{top:320px;left:900px}
+    .vl4{top:620px;left:900px}
+    .hl3{top:1020px;left:1300px}
+    .vl5{top:1020px;left:1300px}
+    .hl4{top:1520px;left:800px}
+    @keyframes w400{to{width:400px}} @keyframes w800{to{width:800px}}
+    @keyframes w500{to{width:500px}} @keyframes h90{to{height:90px}}
+    @keyframes h120{to{height:120px}} @keyframes h300{to{height:300px}}
+    @keyframes h400{to{height:400px}} @keyframes h500{to{height:500px}}
+    .hl1.show{animation:w400 1s forwards}
+    .vl1.show{animation:h90 1s forwards}
+    .vl2.show{animation:h120 1s forwards}
+    .hl2.show{animation:w800 1.2s forwards}
+    .vl3.show{animation:h300 1.2s forwards}
+    .vl4.show{animation:h400 1.2s forwards}
+    .hl3.show{animation:w400 1.2s forwards}
+    .vl5.show{animation:h500 1.2s forwards}
+    .hl4.show{animation:w500 1.2s forwards}
+
+    /* ——— Completion Popup ——— */
+    #completePopup{
+      position:fixed;top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.5);
+      display:none;align-items:center;justify-content:center;
+      z-index:20;
+    }
+    #completePopup .box{
+      background:#fff;padding:20px;border-radius:8px;
+      max-width:360px;text-align:center;position:relative;
+      box-shadow:0 6px 20px rgba(0,0,0,.3);
+    }
+    #completePopup .closeBtn{
+      position:absolute;top:8px;right:12px;cursor:pointer;font-size:18px;
+    }
+    #completePopup .btn{
+      margin:8px 6px 0;padding:10px 20px;
+      background:#3498db;color:#fff;border:none;border-radius:4px;
+      cursor:pointer;font-size:15px;
+    }
+
+    /* ——— Friendly Error Popup ——— */
+    #errorPopup{
+      position:fixed;top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.5);
+      display:none;align-items:center;justify-content:center;
+      z-index:20;
+    }
+    #errorPopup .box{
+      background:#fff;padding:20px;border-radius:8px;
+      max-width:300px;text-align:center;position:relative;
+      box-shadow:0 6px 20px rgba(0,0,0,.3);
+    }
+    #errorPopup .closeBtn, #errorPopup .okBtn{
+      margin:10px 5px 0;padding:8px 16px;
+      background:#3498db;color:#fff;border:none;border-radius:4px;
+      cursor:pointer;font-size:14px;
+    }
+
+    /* ——— Back button ——— */
+    #backBtn {
+      position:fixed; top:16px; left:16px;
+      background:#fff; border:1px solid #ccc;
+      padding:8px 12px; border-radius:4px;
+      cursor:pointer; font-size:14px; z-index:30;
+      box-shadow:0 2px 6px rgba(0,0,0,.2);
+    }
+  </style>
+
+  <!-- jsPDF & AutoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+  <!-- Back to Home button -->
+  <button id="backBtn" onclick="window.location.href='http://localhost:5000'">
+    ← Back Home
+  </button>
+
+  <!-- Friendly Error Popup -->
+  <div id="errorPopup">
+    <div class="box">
+      <span class="closeBtn" onclick="closeErrorPopup()">✕</span>
+      <h3>Oops!</h3>
+      <p>Failed to load your journey. Please try again later.</p>
+      <button class="okBtn" onclick="closeErrorPopup()">OK</button>
+    </div>
+  </div>
+
+  <!-- Completion Popup -->
+  <div id="completePopup">
+    <div class="box">
+      <span class="closeBtn" onclick="closePopup()">✕</span>
+      <h2>Your Journey Is Ready!</h2>
+      <p>Download your journey details as a professional PDF:</p>
+      <button class="btn" onclick="downloadPDF()">Download PDF</button>
+      <button class="btn"
+        onclick="window.location.href='http://localhost:8080/package.html'">
+        See All Packages
+      </button>
+    </div>
+  </div>
+
+  <video id="bgVideo" autoplay muted loop class="video-bg">
+    <source src="indiantrainm.mp4" type="video/mp4">
+  </video>
+  <audio id="bgAudio"></audio>
+
+  <!-- timeline lines -->
+  <div class="line hl hl1" id="hl1"></div>
+  <div class="line vl vl1" id="vl1"></div>
+  <div class="line vl vl2" id="vl2"></div>
+  <div class="line hl hl2" id="hl2"></div>
+  <div class="line vl vl3" id="vl3"></div>
+  <div class="line vl vl4" id="vl4"></div>
+  <div class="line hl hl3" id="hl3"></div>
+  <div class="line vl vl5" id="vl5"></div>
+  <div class="line hl hl4" id="hl4"></div>
+
+  <!-- on-screen boxes -->
+  <div class="info start" id="b0">
+    <h3 id="startTitle">Start – …</h3>
+    <p id="startText">Loading…</p>
+  </div>
+  <div class="info dest" id="b1">
+    <h3 id="destTitle">Destination – …</h3>
+    <p id="destText">Loading…</p>
+  </div>
+  <div class="info hotel" id="b2">
+    <img id="hotelImg" src="" alt="Hotel">
+    <div class="details">
+      <h4 id="hotelName">…</h4>
+      <p id="hotelText">Loading…</p>
+      <p>📞 <span id="hotelPhone">…</span></p>
+    </div>
+  </div>
+  <!-- day-1 attractions -->
+  <div class="info p2" id="b4">
+    <img id="att1Img" src="" alt="">
+    <div class="details">
+      <h4 id="att1Name">…</h4>
+      <p id="att1Text">Loading…</p>
+    </div>
+  </div>
+  <div class="info p3" id="b5">
+    <img id="att2Img" src="" alt="">
+    <div class="details">
+      <h4 id="att2Name">…</h4>
+      <p id="att2Text">Loading…</p>
+    </div>
+  </div>
+  <!-- day two (conditionally hidden) -->
+  <div class="info day2" id="b6">Day Two Begins</div>
+  <div class="info p4" id="b7">
+    <img id="att3Img" src="" alt="">
+    <div class="details">
+      <h4 id="att3Name">…</h4>
+      <p id="att3Text">Loading…</p>
+    </div>
+  </div>
+  <div class="info p5" id="b8">
+    <img id="att4Img" src="" alt="">
+    <div class="details">
+      <h4 id="att4Name">…</h4>
+      <p id="att4Text">Loading…</p>
+    </div>
+  </div>
+  <div class="info p6" id="b9">
+    <img id="att5Img" src="" alt="">
+    <div class="details">
+      <h4 id="att5Name">…</h4>
+      <p id="att5Text">Loading…</p>
+    </div>
+  </div>
+  <div class="info end" id="b10">
+    <h4>Journey Ends</h4>
+    <p>Thanks for Traveling!</p>
+  </div>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    function closeErrorPopup(){
+      document.getElementById('errorPopup').style.display='none';
+    }
+    function closePopup(){
+      document.getElementById('completePopup').style.display='none';
+    }
+
+    function reveal(id,d){ setTimeout(()=>{
+      const el=document.getElementById(id);
+      if(el){ el.classList.add('show');
+        el.scrollIntoView({behavior:'smooth',block:'center'});
+      }
+    }, d); }
+    function showLine(id,d){ setTimeout(()=>{
+      document.getElementById(id)?.classList.add('show');
+    }, d); }
+
+    async function downloadPDF(){
+      const J=window._J;
+      const doc=new jsPDF({unit:'pt',format:'a4'}), m=40;
+      let y=m;
+      doc.setFontSize(20).text('My Travel Itinerary',m,y); y+=30;
+      const rows=[
+        ['Start City', J.form.starting_city],
+        ['Mode', J.form.select_transport],
+        ['Ticket/Price', J.form.select_transport==='Train'
+          ? J.transport.train_ticket
+          : 'Rs. '+J.transport.bus_price],
+        ['Date', new Date(J.form.select_date).toLocaleDateString()],
+        ['Destination City', J.form.destination_city],
+        ['Departure', J.transport.departure_time.split('T')[0]],
+        ['Arrival', J.transport.arrival_time.split('T')[0]],
+        ['Duration', J.transport.journey_duration+' min'],
+        ['Stop', J.transport.deboarding_stop],
+        ['Hotel', J.hotel.hotel_name],
+        ['Hotel Price', 'Rs. '+J.hotel.room_price+'/night'],
+        ['Hotel Phone', J.hotel.phone]
+      ];
+      J.attractions.forEach((a,i)=>rows.push([
+        `Attraction ${i+1}`,
+        `${a.attraction_name} (Rs.${a.entry_fee})`
+      ]));
+      doc.autoTable({
+        startY:y, head:[['Field','Details']], body:rows,
+        theme:'grid', headStyles:{fillColor:[52,152,219],textColor:255},
+        styles:{fontSize:11,cellPadding:4}
+      });
+      doc.save('Travel_Itinerary.pdf');
+    }
+
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      let resp;
+      try {
+        resp=await fetch('/api/last-journey');
+      } catch {
+        return document.getElementById('errorPopup').style.display='flex';
+      }
+      if (!resp.ok) {
+        return document.getElementById('errorPopup').style.display='flex';
+      }
+      const {form,transport,hotel,attractions,videoSrc} = await resp.json();
+      window._J={form,transport,hotel,attractions};
+
+      // if only 1 day, hide Day 2 & its attractions + lines
+      if (form.number_of_days === 1) {
+        ['b6','b7','b8','b9','hl3','vl5','hl4'].forEach(id=>{
+          const e=document.getElementById(id);
+          if(e) e.style.display='none';
+        });
+      }
+
+      // swap video/audio
+      document.getElementById('bgVideo')
+        .querySelector('source').src=videoSrc;
+      document.getElementById('bgVideo').load();
+      const aEl=document.getElementById('bgAudio');
+      aEl.src=videoSrc==='indiantrainm.mp4'?'trainsound.mp3':'bussound.wav';
+      aEl.play().catch(()=>{});
+
+      const fmtDate=dt=>new Date(dt).toLocaleDateString();
+      // populate boxes...
+      document.getElementById('startTitle').textContent=
+        `Start – ${form.starting_city}`;
+      document.getElementById('startText').innerHTML=
+        form.select_transport==='Train'
+          ? `Train ${transport.train_number}<br>
+             Ticket: ${transport.train_ticket}<br>
+             Date: ${fmtDate(form.select_date)}`
+          : `Bus ${transport.bus}<br>
+             Price: Rs. ${transport.bus_price}<br>
+             Date: ${fmtDate(form.select_date)}`;
+
+      document.getElementById('destTitle').textContent=
+        `Destination – ${form.destination_city}`;
+      let dtxt=`Dep: ${transport.departure_time.split('T')[0]} ·
+                Arr: ${transport.arrival_time.split('T')[0]}`;
+      dtxt+=`<br>Duration: ${transport.journey_duration} min ·
+                Stop: ${transport.deboarding_stop}`;
+      document.getElementById('destText').innerHTML=dtxt;
+
+      document.getElementById('hotelImg').src=hotel.photo_url;
+      document.getElementById('hotelName').textContent=hotel.hotel_name;
+      document.getElementById('hotelText').textContent=
+        `Rs. ${hotel.room_price}/night`;
+      document.getElementById('hotelPhone').textContent=hotel.phone;
+
+      attractions.forEach((a,i)=>{
+        const idx=i+1;
+        document.getElementById(`att${idx}Img`).src=a.photo_url;
+        document.getElementById(`att${idx}Name`).textContent=
+          a.attraction_name;
+        document.getElementById(`att${idx}Text`).textContent=
+          `Open ${a.open_time}-${a.close_time}, Rs. ${a.entry_fee}`;
+      });
+
+      // animate…
+      reveal('b0',1500); showLine('hl1',500);
+      showLine('vl1',2000); showLine('vl2',3000); reveal('b1',3500);
+      showLine('hl2',4200); reveal('b2',5200);
+      showLine('vl3',6000); reveal('b4',6500);
+      showLine('vl4',7800); reveal('b5',8300);
+      if (form.number_of_days > 1) {
+        reveal('b6',9000);
+        showLine('hl3',9600); reveal('b7',10100);
+        showLine('vl5',10900); reveal('b8',11300);
+        showLine('hl4',11900); reveal('b9',12500);
+      }
+      reveal('b10',13100);
+
+      // show completion popup after timeline
+      setTimeout(()=>{
+        document.getElementById('completePopup').style.display='flex';
+      }, 14000);
+    });
+  </script>
+</body>
+</html>

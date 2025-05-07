@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Package Tours</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7f9;
+      margin: 0;
+      padding: 20px;
+    }
+    /* Back Home button */
+    #backBtn {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 8px 12px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    header img.logo {
+      height: 50px;
+      margin-right: 15px;
+    }
+    header h1 {
+      font-size: 28px;
+      color: #333;
+    }
+    #errorMsg {
+      color: #c00;
+      text-align: center;
+      margin: 20px 0;
+      display: none;
+    }
+    .packages {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 280px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .card .city {
+      background: #3498db;
+      color: #fff;
+      padding: 12px;
+      font-size: 18px;
+    }
+    .card .details {
+      padding: 12px;
+      flex-grow: 1;
+    }
+    .card .details p {
+      margin: 8px 0;
+      color: #555;
+      font-size: 14px;
+    }
+    .card .details .icon-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #333;
+    }
+    .card .details .icon-text i {
+      color: #3498db;
+    }
+    .card footer {
+      background: #fafafa;
+      padding: 12px;
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Back Home button -->
+  <button id="backBtn" onclick="window.location.href='http://localhost:5000/'">
+    ← Back Home
+  </button>
+
+  <header>
+    <img class="logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
+    <h1>Explore Our Package Tours</h1>
+  </header>
+
+  <p id="errorMsg">Failed to load packages. Please try again later.</p>
+
+  <section class="packages" id="packages">
+    <!-- Cards injected here -->
+  </section>
+
+  <script>
+    async function loadPackages() {
+      const container = document.getElementById('packages');
+      const errorMsg = document.getElementById('errorMsg');
+      try {
+        const res = await fetch('/api/packages');
+        if (!res.ok) throw new Error('Network error');
+        const list = await res.json();
+        if (!list.length) {
+          container.innerHTML = '<p>No packages available right now.</p>';
+          return;
+        }
+        list.forEach(pkg => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="city">
+              <i class="fas fa-map-marker-alt"></i>
+              ${pkg.city_name}
+            </div>
+            <div class="details">
+              <p>${pkg.description}</p>
+              <div class="icon-text">
+                <i class="fas fa-clock"></i>
+                Duration: ${pkg.duration_days} day${pkg.duration_days>1?'s':''}
+              </div>
+              <div class="icon-text">
+                <i class="fas fa-rupee-sign"></i>
+                Price: Rs. ${pkg.price}
+              </div>
+            </div>
+            <footer>
+              Package ID: ${pkg.package_id}<br>
+              📞 +91-98765-43210
+            </footer>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Failed to load packages', err);
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPackages);
+  </script>
+</body>
+</html>

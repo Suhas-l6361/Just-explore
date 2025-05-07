@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Video Library – Just Explore</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 50px;
+    }
+
+    /* Back button */
+    #backBtn {
+      margin: 20px;
+      padding: 8px 12px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      align-self: flex-start;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      margin-bottom: 20px;
+    }
+
+    header img.logo {
+      height: 50px;
+      margin-right: 15px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      color: #333;
+    }
+
+    #errorMsg {
+      color: #c00;
+      text-align: center;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+      width: 90%;
+      max-width: 1200px;
+    }
+
+    .video-card {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    iframe {
+      width: 100%;
+      height: 200px;
+      border: none;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 480px) {
+      iframe {
+        height: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button id="backBtn" onclick="location.href='http://127.0.0.1:5500/just_expore/home.html'">
+    ← Back Home
+  </button>
+
+  <header>
+    <img class="logo" src="logo.png" alt="Just Explore Logo" onerror="this.style.display='none'">
+    <h1>Video Library</h1>
+  </header>
+
+  <p id="errorMsg">Failed to load videos. Please try again later.</p>
+
+  <div class="video-grid" id="videoContainer">
+    <!-- Video cards injected here -->
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const videoContainer = document.getElementById('videoContainer');
+      const errorMsg = document.getElementById('errorMsg');
+
+      try {
+        const res = await fetch('/api/videos');
+        if (!res.ok) throw new Error('Network response was not ok');
+        const videos = await res.json();
+
+        if (!videos.length) {
+          videoContainer.innerHTML = '<p style="text-align:center; width:100%;">No videos available.</p>';
+        } else {
+          videoContainer.innerHTML = videos.map(v => {
+            const embedUrl = v.video_link.replace("watch?v=", "embed/");
+            return `
+              <div class="video-card">
+                <iframe src="${embedUrl}" allowfullscreen></iframe>
+              </div>`;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Error loading videos:', err);
+        errorMsg.style.display = 'block';
+      }
+    });
+  </script>
+
+</body>
+</html>

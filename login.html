@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Just Explore</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+    body {
+      background: url('loginimage.png') no-repeat center center;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Video background (initially hidden) */
+    #bgVideo {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      display: none;
+    }
+
+    .form-wrapper {
+      position: absolute;
+      top: 42%;
+      left: 51%;
+      transform: translate(-50%, -50%);
+      width: 160px;
+      padding: 10px;
+      background: transparent;
+      backdrop-filter: blur(4px);
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 1s ease, opacity 1s ease;
+      z-index: 1;
+    }
+    /* Fly-out animation */
+    .form-wrapper.fly-out {
+      transform: translate(-150%, -50%) scale(0.5);
+      opacity: 0;
+    }
+
+    .form-wrapper h2 {
+      color: white;
+      font-size: 20px;
+      text-align: center;
+      margin-bottom: 15px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .form-wrapper input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .form-wrapper .links {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      color: #fff;
+      margin: 8px 0 16px;
+    }
+    .form-wrapper .links a {
+      color: #fff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .form-wrapper .links a:hover {
+      opacity: 0.8;
+    }
+
+    .form-wrapper button {
+      width: 100%;
+      padding: 10px;
+      background-color: #2E7D32;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .form-wrapper button:hover {
+      background-color: #1B5E20;
+      transform: scale(1.03);
+    }
+
+    /* Popup message */
+    .popup-msg {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      padding: 15px 25px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 2;
+    }
+    .popup-msg.show {
+      opacity: 1;
+    }
+
+    /* Back button */
+    .back-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 2;
+    }
+    .back-btn a {
+      display: inline-block;
+      background: rgba(46,125,50,0.8);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+    .back-btn a:hover {
+      background: rgba(27,94,32,0.8);
+    }
+
+    @media (max-width: 768px) {
+      .form-wrapper {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background video (initially hidden) -->
+  <video id="bgVideo">
+    <source src="loginvideo.mp4" type="video/mp4">
+  </video>
+
+  <div class="back-btn">
+    <a href="http://127.0.0.1:5500/just_expore/home.html">← Back to Home</a>
+  </div>
+
+  <div class="form-wrapper" id="formWrapper">
+    <h2>LOGIN</h2>
+    <form id="loginForm">
+      <input id="email" type="email" placeholder="Enter email" required />
+      <input id="password" type="password" placeholder="Enter password" required />
+      <div class="links">
+        <a href="#" id="forgot">Forgot password?</a>
+      </div>
+      <button type="submit">LOGIN</button>
+      <div style="color:white; text-align:center; margin-top:8px;">
+        Don't have an account? <a href="http://127.0.0.1:5500/just_expore/register.html">Create here</a>
+      </div>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail }
+      from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDfCw-ftxh3nvBbzEmjedz4exlAUPXh920",
+      authDomain: "try-two-4e55c.firebaseapp.com",
+      projectId: "try-two-4e55c",
+      storageBucket: "try-two-4e55c.appspot.com",
+      messagingSenderId: "133779617189",
+      appId: "1:133779617189:web:492e0b26adf205c79de44c"
+    };
+
+    initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    const formWrapper = document.getElementById('formWrapper');
+    const loginForm   = document.getElementById('loginForm');
+    const bgVideo     = document.getElementById('bgVideo');
+
+    function showPopup(msg) {
+      const popup = document.createElement('div');
+      popup.className = 'popup-msg';
+      popup.textContent = msg;
+      document.body.appendChild(popup);
+      requestAnimationFrame(() => popup.classList.add('show'));
+      return popup;
+    }
+
+    loginForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const pwd   = document.getElementById('password').value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pwd);
+
+        // 1. show popup for 1 second
+        const popup = showPopup('Login successful!');
+        setTimeout(() => {
+          popup.classList.remove('show');
+          // 2. fly the form out over 1 second
+          formWrapper.classList.add('fly-out');
+          // 3. switch background to video and play
+          document.body.style.background = 'none';
+          bgVideo.style.display = 'block';
+          bgVideo.play();
+          popup.remove();
+        }, 1000);
+
+        // 4. after total 1s + 3s = 4000ms, redirect
+        setTimeout(() => {
+          window.location.href = 'http://localhost:5000';
+        }, 4000);
+
+      } catch (err) {
+        const code = err.code;
+        const msg =
+          code === 'auth/wrong-password'       ? 'Incorrect password.' :
+          code === 'auth/user-not-found'       ? 'No account with that email.' :
+          code === 'auth/invalid-credential'   ? 'Incorrect user credentials.' :
+          err.message;
+        alert(msg);
+      }
+    });
+
+    document.getElementById('forgot').addEventListener('click', async e => {
+      e.preventDefault();
+      const email = prompt('Enter your email for reset:');
+      if (!email) return;
+      try {
+        await sendPasswordResetEmail(auth, email);
+        const popup = showPopup(`Reset link sent to ${email}`);
+        setTimeout(() => popup.remove(), 2000);
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  </script>
+
+</body>
+</html>

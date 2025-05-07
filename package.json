@@ -1,0 +1,33 @@
+{
+  "name": "just_expore",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "start:all": "concurrently \"node index.js\" \"node map.js\" \"node package.js\" \"node cities.js\" \"node videolink.js\"",
+    "start:index": "node index.js",
+    "start:map": "node map.js",
+    "start:package": "node package.js",
+    "start:cities": "node cities.js",
+    "start:videolink": "node videolink.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "echo \"Add your linter here\" && exit 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "fs": "^0.0.1-security",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.14.1",
+    "serverless-offline": "^14.4.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
