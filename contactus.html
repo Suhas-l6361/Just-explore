@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Profile - Suresh Gupta</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f3ef;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #2E7D32;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      z-index: 10;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #1B5E20;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f5f3ef;
+      padding: 40px 60px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      gap: 40px;
+      max-width: 1100px;
+      width: 90%;
+      margin: 80px auto 0;
+    }
+
+    .info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      color: #333;
+    }
+
+    .info h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .info-item i {
+      width: 28px;
+      height: 28px;
+      background-color: #e0d8c9;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 6px;
+      margin-right: 15px;
+      font-size: 16px;
+    }
+
+    .review-box {
+      display: flex;
+      align-items: center;
+      background-color: #f0e4cc;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    .review-box i {
+      color: gold;
+      margin-right: 5px;
+    }
+
+    .profile-img {
+      width: 260px;
+      height: auto;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: 100px;
+      }
+
+      .info-item {
+        justify-content: center;
+      }
+
+      .profile-img {
+        width: 180px;
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <a href="http://127.0.0.1:5500/just_expore/home.html" class="back-button">
+    <i class="fa-solid fa-arrow-left"></i> Back
+  </a>
+
+  <div class="container">
+    <div class="info">
+      <h1>Suhas L</h1>
+      <div class="info-item"><i class="fa-regular fa-calendar-days"></i> Start Date: March 2022</div>
+      <div class="info-item"><i class="fa-regular fa-envelope"></i> lsuhas75@gmail.com</div>
+      <div class="info-item"><i class="fa-solid fa-location-dot"></i> India</div>
+      <div class="info-item"><i class="fa-solid fa-briefcase"></i> BIMA</div>
+      <div class="info-item"><i class="fa-solid fa-phone"></i> +91 9019795606</div>
+      <div class="review-box">
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+        &nbsp; Customer Reviews
+      </div>
+    </div>
+    <img src="suhas.png" alt="Suhas L" class="profile-img" />
+  </div>
+
+</body>
+</html>

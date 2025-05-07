@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Just Explore Journey Form</title>
+  <style>
+    /* —— existing CSS unchanged —— */
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body, html { height:100%; font-family:'Segoe UI',sans-serif; overflow:hidden; }
+    video.bg-video { position:fixed; top:0; left:0; min-width:100%; min-height:100%; object-fit:cover; z-index:-1; }
+    .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:0; }
+    .form-container { position:relative; z-index:1; max-width:850px; margin:60px auto; background:rgba(255,255,255,0.1); backdrop-filter:blur(12px); border-radius:14px; padding:25px 35px; color:#fff; }
+    h1 { text-align:center; font-size:36px; color:#fff; margin-bottom:25px; text-shadow:0 2px 4px rgba(0,0,0,0.5); }
+    form { display:flex; flex-wrap:wrap; justify-content:space-between; gap:20px; }
+    .form-group { flex:1 1 48%; display:flex; flex-direction:column; position:relative; }
+    .form-group.small { flex:1 1 auto; max-width:150px; }
+    label { font-weight:500; margin-bottom:6px; }
+    input[type="text"], input[type="date"], select { padding:10px; border:none; border-radius:6px; background:rgba(255,255,255,0.85); color:#000; font-size:15px; }
+    .radio-group { flex:1 1 100%; margin-top:10px; }
+    .radio-group label { margin-right:20px; font-size:16px; }
+    .radio-group input { margin-right:6px; }
+    .submit-btn { flex:1 1 100%; margin-top:20px; text-align:center; }
+    .submit-btn button { background:#2E7D32; color:#fff; border:none; padding:12px 30px; font-size:16px; border-radius:8px; cursor:pointer; transition:background-color .3s, transform .2s; }
+    .submit-btn button:hover { background:#1B5E20; transform:scale(1.03); }
+    @media(max-width:768px){ form{flex-direction:column;} .form-group, .form-group.small, .submit-btn{flex:1 1 100%; max-width:100%;} }
+
+    /* —— popup —— */
+    #popup { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:10; }
+    #popup .box { background:#fff;color:#000;padding:20px;border-radius:8px;max-width:300px;text-align:center; }
+    #popup .close { display:none; }
+
+    /* —— autocomplete dropdown —— */
+    .suggestions { position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;color:#000;border-radius:4px;max-height:150px;overflow-y:auto;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:2; }
+    .suggestion-item{ padding:8px; cursor:pointer; }
+    .suggestion-item:hover{ background:#eee; }
+
+    /* —— back button —— */
+    .back-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 11;
+    }
+    .back-btn a {
+      color: #fff;
+      background: rgba(46,125,50,0.8);
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+    .back-btn a:hover {
+      background: rgba(27,94,32,0.8);
+    }
+  </style>
+</head>
+<body>
+
+  <video class="bg-video" autoplay muted loop>
+    <source src="road.mp4" type="video/mp4"/>
+  </video>
+  <div class="overlay"></div>
+
+  <div class="back-btn">
+    <a href="http://127.0.0.1:5500/just_expore/login.html">← Back to Login</a>
+  </div>
+
+  <div class="form-container">
+    <h1>JUST EXPLORE</h1>
+    <form id="journeyForm">
+      <div class="form-group">
+        <label for="startCity">Select starting city</label>
+        <input type="text" id="startCity" placeholder="Type to search…" autocomplete="off" required/>
+        <div class="suggestions" id="startSuggestions"></div>
+      </div>
+      <div class="form-group">
+        <label for="endCity">Select destination city</label>
+        <input type="text" id="endCity" placeholder="Type to search…" autocomplete="off" required/>
+        <div class="suggestions" id="endSuggestions"></div>
+      </div>
+      <div class="form-group">
+        <label for="persons">Number of persons</label>
+        <input type="text" id="persons" placeholder="e.g. 3" required/>
+      </div>
+      <div class="form-group">
+        <label for="journeyDate">Select date</label>
+        <input type="date" id="journeyDate" required/>
+      </div>
+      <div class="form-group small">
+        <label for="numDays">Number of days</label>
+        <select id="numDays" required>
+          <option value="">--Select--</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+      </div>
+      <div class="form-group radio-group">
+        <label>Select transport:</label>
+        <label><input type="radio" name="transport" value="Train" required/> Train</label>
+        <label><input type="radio" name="transport" value="Bus"/> Bus</label>
+      </div>
+      <div class="submit-btn">
+        <button type="submit">SUBMIT</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="popup">
+    <div class="box">
+      <p id="popupMsg"></p>
+    </div>
+  </div>
+
+  <script>
+    const popup    = document.getElementById('popup'),
+          popupMsg = document.getElementById('popupMsg');
+
+    function showPopup(msg) {
+      popupMsg.textContent = msg;
+      popup.style.display = 'flex';
+    }
+
+    let startCities = [], destCities = [];
+
+    async function loadLists() {
+      try {
+        const [sc, dc] = await Promise.all([
+          fetch('/api/cities').then(r=>r.json()),
+          fetch('/api/destinations').then(r=>r.json())
+        ]);
+        startCities = sc;
+        destCities  = dc;
+      } catch {
+        showPopup('Failed to load lists');
+      }
+    }
+
+    function setupAutocomplete(inpId, boxId, list) {
+      const inp = document.getElementById(inpId),
+            box = document.getElementById(boxId);
+      function render(f='') {
+        box.innerHTML = '';
+        list
+          .filter(c=>c.toLowerCase().includes(f.toLowerCase()))
+          .forEach(city=>{
+            const d = document.createElement('div');
+            d.textContent = city;
+            d.className   = 'suggestion-item';
+            d.addEventListener('mousedown', e=>{
+              e.preventDefault(); inp.value = city;
+            });
+            d.addEventListener('click', ()=>box.innerHTML='');
+            box.appendChild(d);
+          });
+      }
+      inp.addEventListener('focus', ()=>render(''));
+      inp.addEventListener('click', ()=>render(''));
+      inp.addEventListener('input', ()=>render(inp.value));
+      inp.addEventListener('blur', ()=>setTimeout(()=>box.innerHTML='',100));
+    }
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      await loadLists();
+      setupAutocomplete('startCity','startSuggestions',startCities);
+      setupAutocomplete('endCity','endSuggestions',  destCities);
+    });
+
+    document.getElementById('journeyForm').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const payload = {
+        starting_city:     document.getElementById('startCity').value.trim(),
+        destination_city:  document.getElementById('endCity').value.trim(),
+        number_of_persons: document.getElementById('persons').value.trim(),
+        select_date:       document.getElementById('journeyDate').value,
+        number_of_days:    document.getElementById('numDays').value,
+        select_transport:  document.querySelector('input[name="transport"]:checked')?.value
+      };
+
+      try {
+        const res  = await fetch('/submit', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const body = await res.json();
+
+        if (!res.ok) {
+          return showPopup(body.error || 'Server error');
+        }
+
+        // success → show “Loading…” then redirect after 2 s
+        showPopup('Loading…');
+        setTimeout(()=>{
+          window.location.href = 'http://localhost:5001/map.html';
+        }, 2000);
+
+      } catch {
+        showPopup('Network error');
+      }
+    });
+  </script>
+</body>
+</html>
