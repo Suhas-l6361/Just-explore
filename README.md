@@ -2,7 +2,7 @@
 My mini project for 3rd sem MCA
 
 
-It is a simple Resturant management website using html, css, js :)
+It is a simple website using html, css, js :)
 
 ![image alt](https://github.com/Suhas-l6361/Just-explore/blob/main/Screenshot%20(37).png?raw=true)
 
